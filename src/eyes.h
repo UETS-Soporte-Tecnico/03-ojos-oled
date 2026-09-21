@@ -4,10 +4,6 @@
  * Soporte Técnico (3° BGU Técnico) — Unidad Educativa Técnico Salesiano
  * ============================================================================
  * Wrapper modular de la librería oficial Irisoled para ESP32 y SSD1306.
- * 
- * En lugar de copiar cientos de líneas de bitmaps en bruto dentro del proyecto,
- * la librería se descarga e integra automáticamente vía 'platformio.ini' (lib_deps),
- * almacenando 32 expresiones optimizadas en memoria Flash (PROGMEM).
  * ============================================================================
  */
 
@@ -22,7 +18,7 @@
 
 // Dimensiones estándar del display OLED
 #ifndef SCREEN_WIDTH
-#define SCREEN_WIDTH 128
+#define SCREEN_WIDTH 128  
 #endif
 
 #ifndef SCREEN_HEIGHT
@@ -44,10 +40,6 @@
 
 /**
  * Renderiza de forma inmediata un bitmap de expresión en la pantalla OLED.
- * Limpia el buffer previo, dibuja el bitmap monocromático y vuelca el buffer.
- *
- * @param display Referencia a la instancia de Adafruit_SSD1306.
- * @param eyeBitmap Puntero a la matriz del bitmap almacenada en PROGMEM.
  */
 inline void drawEyeExpression(Adafruit_SSD1306 &display, const unsigned char* eyeBitmap) {
   display.clearDisplay();
