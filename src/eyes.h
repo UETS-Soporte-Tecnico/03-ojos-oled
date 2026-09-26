@@ -1,16 +1,3 @@
-/**
- * ============================================================================
- * EYES.H — CATÁLOGO DE EXPRESIONES OCULARES OLED (128x64)
- * Soporte Técnico (3° BGU Técnico) — Unidad Educativa Técnico Salesiano
- * ============================================================================
- * Wrapper modular de la librería oficial Irisoled para ESP32 y SSD1306.
- * 
- * En lugar de copiar cientos de líneas de bitmaps en bruto dentro del proyecto,
- * la librería se descarga e integra automáticamente vía 'platformio.ini' (lib_deps),
- * almacenando 32 expresiones optimizadas en memoria Flash (PROGMEM).
- * ============================================================================
- */
-
 #ifndef EYES_H
 #define EYES_H
 
@@ -29,9 +16,8 @@
 #define SCREEN_HEIGHT 64
 #endif
 
-// ============================================================================
 // ALIAS AMIGABLES A LAS MATRICES EN PROGMEM DE IRISOLED
-// ============================================================================
+
 #define eye_normal     Irisoled::normal
 #define eye_happy      Irisoled::happy
 #define eye_alert      Irisoled::alert
@@ -42,6 +28,23 @@
 #define eye_look_right Irisoled::look_right
 #define eye_excited    Irisoled::excited
 
+//ALIAS PARA ANIMACIONES NUEVAS
+#define eye_bored      Irisoled::bored
+#define eye_focused    Irisoled::focused
+#define eye_wink_left  Irisoled::wink_left
+#define eye_sad        Irisoled::sad
+#define eye_angry      Irisoled::angry
+
+#define eye_look_up    Irisoled::look_up
+#define eye_look_down  Irisoled::look_down
+#define eye_wink_left    Irisoled::wink_left
+
+#define eye_look_down    Irisoled::look_down
+#define eye_look_up      Irisoled::look_up
+#define eye_worried      Irisoled::worried
+#define eye_focused      Irisoled::focused
+#define eye_furious      Irisoled::furious
+#define icon_battery_full Irisoled::battery_full
 /**
  * Renderiza de forma inmediata un bitmap de expresión en la pantalla OLED.
  * Limpia el buffer previo, dibuja el bitmap monocromático y vuelca el buffer.

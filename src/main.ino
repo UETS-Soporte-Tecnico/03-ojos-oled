@@ -1,16 +1,3 @@
-/**
- * ============================================================================
- * MAIN.INO — STARTER KIT SEMANA 03: OJOS ROBÓTICOS OLED SSD1306
- * Soporte Técnico (3° BGU Técnico) — Unidad Educativa Técnico Salesiano
- * ============================================================================
- * Instrucciones:
- * 1. Completa cada uno de los bloques marcados con '// TODO:'
- * 2. Compila con PlatformIO (botón Build ✔)
- * 3. Simula en Wokwi Simulator abriendo diagram.json
- * 4. Valida tu entrega ejecutando en terminal: pnpm test
- * ============================================================================
- */
-
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -19,221 +6,659 @@
 #include "logboot.h"
 #include "eyes.h"
 
-// Instancia global del display OLED SSD1306 (128x64)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+// DISPLAY
 
-// ============================================================================
-// DEFINICIÓN DE ESTADOS Y CONTROL DE ANIMACIÓN
-// ============================================================================
+Adafruit_SSD1306 display(
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT,
+  &Wire,
+  OLED_RESET
+);
+
+// ESTADOS TOTALES (Nuevos de eyes.h)
+
 enum EyeState {
+
   STATE_NORMAL,
   STATE_HAPPY,
   STATE_ALERT,
   STATE_SLEEPY,
   STATE_BLINK,
+
   STATE_LOOK_LEFT,
   STATE_LOOK_RIGHT,
-  STATE_EXCITED
+  STATE_LOOK_DOWN,
+  STATE_LOOK_UP,
+
+  STATE_EXCITED,
+
+  STATE_WINK_LEFT,
+  STATE_WORRIED,
+  STATE_FOCUSED,
+  STATE_FURIOUS
 };
 
 EyeState currentState = STATE_NORMAL;
-bool modoAutonomo = true; // Permite alternar entre animación autónoma y control serial
+
+// CONTROL FSM
+
+bool modoAutonomo = true;
+
 unsigned long previousMillis = 0;
-const unsigned long INTERVALO_ANIMACION = 2500;
+
+// Velocidad general de cambio de expresiones
+const unsigned long INTERVALO_ANIMACION = 500;
+
 int pasoSecuencia = 0;
 
-// ============================================================================
-// RETO 04: FUNCIÓN SERIAL DEBUG (Control manual y enlace con IA)
-// ============================================================================
-void debugEyesSerial() {
-  if (Serial.available() > 0) {
-    char cmd = Serial.read();
-    if (cmd == '\r' || cmd == '\n' || cmd == ' ') return;
 
-    // Al recibir un comando, se pausa temporalmente la FSM autónoma
+// INICIALES + TRANSICIÓN
+
+void mostrarInicialesYTransicion() {
+
+  // MOSTRAR "AS"
+
+  display.clearDisplay();
+
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(5);
+
+  display.setCursor(20, 15);
+
+  display.print(F("AS"));
+
+  display.display();
+
+  delay(1200);
+
+
+  // PANTALLA COMPLETAMENTE BLANCA
+
+  display.clearDisplay();
+
+  display.fillRect(
+    0,
+    0,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    SSD1306_WHITE
+  );
+
+  display.display();
+
+  delay(350);
+
+
+  // LIMPIAR PANTALLA
+
+  display.clearDisplay();
+  display.display();
+
+  delay(150);
+}
+
+
+// DEBUG SERIAL
+
+void debugEyesSerial() {
+
+  if (Serial.available() > 0) {
+
+    char cmd = Serial.read();
+
+    if (
+      cmd == '\r' ||
+      cmd == '\n' ||
+      cmd == ' '
+    ) {
+      return;
+    }
+
+
+    // Al usar control manual se pausa la FSM
     modoAutonomo = false;
 
+
     switch (cmd) {
+
+      // NORMAL
+
       case '1':
       case 'N':
       case 'n':
+
         currentState = STATE_NORMAL;
-        drawEyeExpression(display, eye_normal);
-        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: NORMAL"));
+
+        drawEyeExpression(
+          display,
+          eye_normal
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] NORMAL")
+        );
+
         break;
+
+
+      // HAPPY
 
       case '2':
       case 'H':
       case 'h':
-        // TODO 4.2: Conmuta el estado a STATE_HAPPY y renderiza eye_happy con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: FELIZ"));
+
+        currentState = STATE_HAPPY;
+
+        drawEyeExpression(
+          display,
+          eye_happy
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] FELIZ")
+        );
+
         break;
+
+
+      // ALERT
 
       case '3':
       case 'A':
       case 'a':
-        // TODO 4.3: Conmuta el estado a STATE_ALERT y renderiza eye_alert con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: ALERTA"));
+
+        currentState = STATE_ALERT;
+
+        drawEyeExpression(
+          display,
+          eye_alert
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] ALERTA")
+        );
+
         break;
+
+
+      // SLEEPY
 
       case '4':
       case 'S':
       case 's':
+
         currentState = STATE_SLEEPY;
-        drawEyeExpression(display, eye_sleepy);
-        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: REPOSO (Sleepy)"));
+
+        drawEyeExpression(
+          display,
+          eye_sleepy
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] SLEEPY")
+        );
+
         break;
+
+
+      // BLINK
 
       case '5':
       case 'B':
       case 'b':
+
         currentState = STATE_BLINK;
-        drawEyeExpression(display, eye_blink);
-        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: PARPADEO (Blink)"));
+
+        drawEyeExpression(
+          display,
+          eye_blink
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] BLINK")
+        );
+
         break;
+
+
+      // LOOK LEFT
 
       case '6':
       case 'L':
       case 'l':
-        // TODO 4.4: Conmuta el estado a STATE_LOOK_LEFT y renderiza eye_look_left:
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
+
+        currentState = STATE_LOOK_LEFT;
+
+        drawEyeExpression(
+          display,
+          eye_look_left
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] MIRADA IZQUIERDA")
+        );
+
         break;
+
+
+      // LOOK RIGHT
 
       case '7':
       case 'R':
       case 'r':
+
         currentState = STATE_LOOK_RIGHT;
-        drawEyeExpression(display, eye_look_right);
-        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: MIRADA DERECHA"));
+
+        drawEyeExpression(
+          display,
+          eye_look_right
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] MIRADA DERECHA")
+        );
+
         break;
+
+
+      // EXCITED
 
       case '8':
       case 'E':
       case 'e':
+
         currentState = STATE_EXCITED;
-        drawEyeExpression(display, eye_excited);
-        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: EMOCIONADO (Excited)"));
+
+        drawEyeExpression(
+          display,
+          eye_excited
+        );
+
+        Serial.println(
+          F("[SERIAL DEBUG] EMOCIONADO")
+        );
+
         break;
+
+
+      // REACTIVAR MODO AUTÓNOMO
 
       case '0':
       case 'M':
       case 'm':
+
         modoAutonomo = true;
+
         previousMillis = millis();
-        Serial.println(F("[SERIAL DEBUG] Modo Autónomo reactivado (Animación FSM activa)"));
+
+        Serial.println(
+          F("[SERIAL DEBUG] MODO AUTONOMO ACTIVADO")
+        );
+
         break;
 
+
+      // COMANDO DESCONOCIDO
+
       default:
-        Serial.print(F("[SERIAL DEBUG] Comando desconocido: "));
+
+        Serial.print(
+          F("[SERIAL DEBUG] Comando desconocido: ")
+        );
+
         Serial.println(cmd);
+
         break;
     }
   }
 }
 
-// ============================================================================
-// RETOS 02 Y 03: MÁQUINA DE ESTADOS FINITOS (FSM) NO BLOQUEANTE
-// ============================================================================
+
+// SECUENCIA AUTÓNOMA
+
 void ejecutarSecuenciaAutonoma() {
-  pasoSecuencia = (pasoSecuencia + 1) % 6;
+
+  pasoSecuencia = (pasoSecuencia + 1) % 14;
+
 
   switch (pasoSecuencia) {
+
+    // NORMAL
+
     case 0:
-      // Reto 01: Expresión Normal
+
       currentState = STATE_NORMAL;
-      drawEyeExpression(display, eye_normal);
+
+      drawEyeExpression(
+        display,
+        eye_normal
+      );
+
       break;
+
+
+    // WINK LEFT
 
     case 1:
-      // Reto 03: Parpadeo
-      // TODO 3.1: Actualiza currentState a STATE_BLINK y dibuja eye_blink:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+
+      currentState = STATE_WINK_LEFT;
+
+      drawEyeExpression(
+        display,
+        eye_wink_left
+      );
+
       break;
+
+
+    // BLINK
 
     case 2:
-      // Reto 03: Mirada Izquierda
-      // TODO 3.2: Actualiza currentState a STATE_LOOK_LEFT y dibuja eye_look_left:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+
+      currentState = STATE_BLINK;
+
+      drawEyeExpression(
+        display,
+        eye_blink
+      );
+
       break;
+
+
+    // ALERT
 
     case 3:
-      // Retorno a Normal
-      currentState = STATE_NORMAL;
-      drawEyeExpression(display, eye_normal);
+
+      currentState = STATE_ALERT;
+
+      drawEyeExpression(
+        display,
+        eye_alert
+      );
+
       break;
+
+
+    // LOOK LEFT
 
     case 4:
-      // Reto 03: Mirada Derecha
-      currentState = STATE_LOOK_RIGHT;
-      drawEyeExpression(display, eye_look_right);
+
+      currentState = STATE_LOOK_LEFT;
+
+      drawEyeExpression(
+        display,
+        eye_look_left
+      );
+
       break;
 
+
+    // LOOK RIGHT
+
     case 5:
-      // Reto 02: Expresión Feliz
-      // TODO 2.1: Actualiza currentState a STATE_HAPPY y dibuja eye_happy:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+
+      currentState = STATE_LOOK_RIGHT;
+
+      drawEyeExpression(
+        display,
+        eye_look_right
+      );
+
+      break;
+
+
+    // LOOK DOWN
+
+    case 6:
+
+      currentState = STATE_LOOK_DOWN;
+
+      drawEyeExpression(
+        display,
+        eye_look_down
+      );
+
+      break;
+
+
+    // LOOK UP
+
+    case 7:
+
+      currentState = STATE_LOOK_UP;
+
+      drawEyeExpression(
+        display,
+        eye_look_up
+      );
+
+      break;
+
+
+    // WORRIED
+
+    case 8:
+
+      currentState = STATE_WORRIED;
+
+      drawEyeExpression(
+        display,
+        eye_worried
+      );
+
+      break;
+
+
+    // FOCUSED
+
+    case 9:
+
+      currentState = STATE_FOCUSED;
+
+      drawEyeExpression(
+        display,
+        eye_focused
+      );
+
+      break;
+
+
+    // SLEEPY
+
+    case 10:
+
+      currentState = STATE_SLEEPY;
+
+      drawEyeExpression(
+        display,
+        eye_sleepy
+      );
+
+      break;
+
+
+    // FOCUSED
+
+    case 11:
+
+      currentState = STATE_FOCUSED;
+
+      drawEyeExpression(
+        display,
+        eye_focused
+      );
+
+      break;
+
+
+    // FURIOUS
+
+    case 12:
+
+      currentState = STATE_FURIOUS;
+
+      drawEyeExpression(
+        display,
+        eye_furious
+      );
+
+      break;
+
+
+    // NORMAL
+
+    case 13:
+
+      currentState = STATE_NORMAL;
+
+      drawEyeExpression(
+        display,
+        eye_normal
+      );
+
       break;
   }
 }
 
-// ============================================================================
-// RETO 01: SETUP (Inicialización, POST y mirada base)
-// ============================================================================
-void setup() {
-  Serial.begin(115200);
-  while (!Serial && millis() < 1000);
 
-  // Inicializar periféricos y pantalla
+// SETUP
+
+void setup() {
+
+  // INICIAR SERIAL
+
+  Serial.begin(115200);
+
+  while (
+    !Serial &&
+    millis() < 1000
+  );
+
+
+  // INICIALIZACIÓN I2C + OLED
+
   if (!initDiagnostics(display)) {
-    Serial.println(F("[FALLO CRÍTICO] Error al inicializar pantalla OLED."));
-    while (true) delay(100);
+
+    Serial.println(
+      F("[FALLO CRITICO] No se pudo inicializar OLED.")
+    );
+
+    while (true) {
+      delay(100);
+    }
   }
 
-  // TODO 1.1: Invoca la función obligatoria de auto-diagnóstico (Power-On Self-Test):
-  // runSystemPOST(display);
 
-  // Menú de ayuda por Serial Monitor
-  Serial.println(F("\n======================================================="));
-  Serial.println(F("🤖 SISTEMA EMBEBIDO ESP32 — TELEMETRÍA Y CONTROL DE OJOS"));
-  Serial.println(F("======================================================="));
-  Serial.println(F("Comandos Serial interactivos (Debug / Control de IA):"));
-  Serial.println(F("  '1' o 'N' -> Ojos Normales (Neutro)"));
-  Serial.println(F("  '2' o 'H' -> Ojos Felices (Empatía)"));
-  Serial.println(F("  '3' o 'A' -> Ojos Alerta (Atención/Peligro)"));
-  Serial.println(F("  '4' o 'S' -> Ojos Reposo (Sleepy)"));
-  Serial.println(F("  '5' o 'B' -> Parpadeo (Blink)"));
-  Serial.println(F("  '6' o 'L' -> Mirar Izquierda"));
-  Serial.println(F("  '7' o 'R' -> Mirar Derecha"));
-  Serial.println(F("  '8' o 'E' -> Ojos Emocionados (Excited)"));
-  Serial.println(F("  '0' o 'M' -> Alternar Modo Autónomo (FSM millis)"));
-  Serial.println(F("=======================================================\n"));
+  // TODO 1.1 - POST
 
-  // TODO 1.2: Dibuja la expresión neutra base para arrancar (eye_normal):
-  // drawEyeExpression(display, eye_normal);
+  runSystemPOST(display);
+
+
+  // INICIALES AS + TRANSICIÓN
+
+  mostrarInicialesYTransicion();
+
+
+  // BATTERY FULL
+
+  drawEyeExpression(
+    display,
+    icon_battery_full
+  );
+
+  delay(800);
+
+
+  // TODO 1.2 - EXPRESIÓN NORMAL
+
+  currentState = STATE_NORMAL;
+
+  drawEyeExpression(
+    display,
+    eye_normal
+  );
+
+
+  // MENÚ SERIAL
+
+  Serial.println(
+    F("\n==============================================")
+  );
+
+  Serial.println(
+    F("ESP32 - CONTROL OJOS OLED")
+  );
+
+  Serial.println(
+    F("==============================================")
+  );
+
+  Serial.println(
+    F("1 / N -> Normal")
+  );
+
+  Serial.println(
+    F("2 / H -> Happy")
+  );
+
+  Serial.println(
+    F("3 / A -> Alert")
+  );
+
+  Serial.println(
+    F("4 / S -> Sleepy")
+  );
+
+  Serial.println(
+    F("5 / B -> Blink")
+  );
+
+  Serial.println(
+    F("6 / L -> Look Left")
+  );
+
+  Serial.println(
+    F("7 / R -> Look Right")
+  );
+
+  Serial.println(
+    F("8 / E -> Excited")
+  );
+
+  Serial.println(
+    F("0 / M -> Modo autonomo")
+  );
+
+  Serial.println(
+    F("==============================================\n")
+  );
+
 
   previousMillis = millis();
 }
 
-// ============================================================================
-// LOOP: Procesamiento continuo sin delay()
-// ============================================================================
+
+// LOOP
+
 void loop() {
-  // Reto 04: Atender comandos de consola Serial (Debug y enlace con IA)
+
+  // Control manual por Serial
   debugEyesSerial();
 
-  // Reto 04: Alternar animación con millis() cuando esté en modo autónomo
+
+  // Máquina de estados automática
   if (modoAutonomo) {
+
     unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= INTERVALO_ANIMACION) {
+
+
+    if (
+      currentMillis - previousMillis
+      >= INTERVALO_ANIMACION
+    ) {
+
       previousMillis = currentMillis;
+
       ejecutarSecuenciaAutonoma();
     }
   }
