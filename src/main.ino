@@ -66,18 +66,18 @@ void debugEyesSerial() {
       case 'H':
       case 'h':
         // TODO 4.2: Conmuta el estado a STATE_HAPPY y renderiza eye_happy con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: FELIZ"));
+        currentState = STATE_HAPPY;
+        drawEyeExpression(display, eye_happy);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: FELIZ"));
         break;
 
       case '3':
       case 'A':
       case 'a':
         // TODO 4.3: Conmuta el estado a STATE_ALERT y renderiza eye_alert con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: ALERTA"));
+        currentState = STATE_ALERT;
+        drawEyeExpression(display, eye_alert);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: ALERTA"));
         break;
 
       case '4':
@@ -100,8 +100,9 @@ void debugEyesSerial() {
       case 'L':
       case 'l':
         // TODO 4.4: Conmuta el estado a STATE_LOOK_LEFT y renderiza eye_look_left:
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
+        currentState = STATE_LOOK_LEFT;
+        drawEyeExpression(display, eye_look_left);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: MIRADA IZQUIERDA"));
         break;
 
       case '7':
@@ -144,63 +145,45 @@ void ejecutarSecuenciaAutonoma() {
 
   switch (pasoSecuencia) {
     case 0:
-      // Reto 01: Expresión Normal
       currentState = STATE_NORMAL;
       drawEyeExpression(display, eye_normal);
       break;
 
     case 1:
-      // Reto 03: Parpadeo
-      // TODO 3.1: Actualiza currentState a STATE_BLINK y dibuja eye_blink:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_BLINK;
+      drawEyeExpression(display, eye_blink);
       break;
 
     case 2:
-      // Reto 03: Mirada Izquierda
-      // TODO 3.2: Actualiza currentState a STATE_LOOK_LEFT y dibuja eye_look_left:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_LOOK_LEFT;
+      drawEyeExpression(display, eye_look_left);
       break;
 
     case 3:
-      // Retorno a Normal
       currentState = STATE_NORMAL;
       drawEyeExpression(display, eye_normal);
       break;
 
     case 4:
-      // Reto 03: Mirada Derecha
       currentState = STATE_LOOK_RIGHT;
       drawEyeExpression(display, eye_look_right);
       break;
 
     case 5:
-      // Reto 02: Expresión Feliz
-      // TODO 2.1: Actualiza currentState a STATE_HAPPY y dibuja eye_happy:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_HAPPY;
+      drawEyeExpression(display, eye_happy);
       break;
   }
 }
-
-// ============================================================================
-// RETO 01: SETUP (Inicialización, POST y mirada base)
-// ============================================================================
 void setup() {
   Serial.begin(115200);
   while (!Serial && millis() < 1000);
 
-  // Inicializar periféricos y pantalla
   if (!initDiagnostics(display)) {
     Serial.println(F("[FALLO CRÍTICO] Error al inicializar pantalla OLED."));
     while (true) delay(100);
   }
-
-  // TODO 1.1: Invoca la función obligatoria de auto-diagnóstico (Power-On Self-Test):
-  // runSystemPOST(display);
-
-  // Menú de ayuda por Serial Monitor
+  runSystemPOST(display);
   Serial.println(F("\n======================================================="));
   Serial.println(F("🤖 SISTEMA EMBEBIDO ESP32 — TELEMETRÍA Y CONTROL DE OJOS"));
   Serial.println(F("======================================================="));
@@ -215,21 +198,13 @@ void setup() {
   Serial.println(F("  '8' o 'E' -> Ojos Emocionados (Excited)"));
   Serial.println(F("  '0' o 'M' -> Alternar Modo Autónomo (FSM millis)"));
   Serial.println(F("=======================================================\n"));
-
-  // TODO 1.2: Dibuja la expresión neutra base para arrancar (eye_normal):
-  // drawEyeExpression(display, eye_normal);
+  drawEyeExpression(display, eye_normal);
 
   previousMillis = millis();
 }
 
-// ============================================================================
-// LOOP: Procesamiento continuo sin delay()
-// ============================================================================
 void loop() {
-  // Reto 04: Atender comandos de consola Serial (Debug y enlace con IA)
   debugEyesSerial();
-
-  // Reto 04: Alternar animación con millis() cuando esté en modo autónomo
   if (modoAutonomo) {
     unsigned long currentMillis = millis();
     if (currentMillis - previousMillis >= INTERVALO_ANIMACION) {
