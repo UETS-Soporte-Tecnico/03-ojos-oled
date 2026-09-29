@@ -21,38 +21,10 @@
     }
   ],
   "connections": [
-    [
-      "esp:GND.1",
-      "oled:GND",
-      "black",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "esp:3V3",
-      "oled:VCC",
-      "red",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "esp:22",
-      "oled:SCL",
-      "yellow",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "esp:21",
-      "oled:SDA",
-      "blue",
-      [
-        "h0"
-      ]
-    ]
+    [ "esp:GND.1", "oled:GND", "black", [ "h0" ] ],
+    [ "esp:3V3", "oled:VCC", "red", [ "h0" ] ],
+    [ "esp:22", "oled:SCL", "yellow", [ "h0" ] ],
+    [ "esp:21", "oled:SDA", "blue", [ "h0" ] ]
   ],
   "dependencies": {}
 }
