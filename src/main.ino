@@ -3,12 +3,6 @@
  * MAIN.INO — STARTER KIT SEMANA 03: OJOS ROBÓTICOS OLED SSD1306
  * Soporte Técnico (3° BGU Técnico) — Unidad Educativa Técnico Salesiano
  * ============================================================================
- * Instrucciones:
- * 1. Completa cada uno de los bloques marcados con '// TODO:'
- * 2. Compila con PlatformIO (botón Build ✔)
- * 3. Simula en Wokwi Simulator abriendo diagram.json
- * 4. Valida tu entrega ejecutando en terminal: pnpm test
- * ============================================================================
  */
 
 #include <Arduino.h>
@@ -66,18 +60,18 @@ void debugEyesSerial() {
       case 'H':
       case 'h':
         // TODO 4.2: Conmuta el estado a STATE_HAPPY y renderiza eye_happy con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: FELIZ"));
+        currentState = STATE_HAPPY;
+        drawEyeExpression(display, eye_happy);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: FELIZ"));
         break;
 
       case '3':
       case 'A':
       case 'a':
         // TODO 4.3: Conmuta el estado a STATE_ALERT y renderiza eye_alert con drawEyeExpression():
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
-        // Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: ALERTA"));
+        currentState = STATE_ALERT;
+        drawEyeExpression(display, eye_alert);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: ALERTA"));
         break;
 
       case '4':
@@ -100,8 +94,9 @@ void debugEyesSerial() {
       case 'L':
       case 'l':
         // TODO 4.4: Conmuta el estado a STATE_LOOK_LEFT y renderiza eye_look_left:
-        // currentState = ...;
-        // drawEyeExpression(display, ...);
+        currentState = STATE_LOOK_LEFT;
+        drawEyeExpression(display, eye_look_left);
+        Serial.println(F("[SERIAL DEBUG] Expresión cambiada a: MIRADA IZQUIERDA"));
         break;
 
       case '7':
@@ -152,15 +147,15 @@ void ejecutarSecuenciaAutonoma() {
     case 1:
       // Reto 03: Parpadeo
       // TODO 3.1: Actualiza currentState a STATE_BLINK y dibuja eye_blink:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_BLINK;
+      drawEyeExpression(display, eye_blink);
       break;
 
     case 2:
       // Reto 03: Mirada Izquierda
       // TODO 3.2: Actualiza currentState a STATE_LOOK_LEFT y dibuja eye_look_left:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_LOOK_LEFT;
+      drawEyeExpression(display, eye_look_left);
       break;
 
     case 3:
@@ -178,8 +173,8 @@ void ejecutarSecuenciaAutonoma() {
     case 5:
       // Reto 02: Expresión Feliz
       // TODO 2.1: Actualiza currentState a STATE_HAPPY y dibuja eye_happy:
-      // currentState = ...;
-      // drawEyeExpression(display, ...);
+      currentState = STATE_HAPPY;
+      drawEyeExpression(display, eye_happy);
       break;
   }
 }
@@ -198,7 +193,7 @@ void setup() {
   }
 
   // TODO 1.1: Invoca la función obligatoria de auto-diagnóstico (Power-On Self-Test):
-  // runSystemPOST(display);
+  runSystemPOST(display);
 
   // Menú de ayuda por Serial Monitor
   Serial.println(F("\n======================================================="));
@@ -217,7 +212,7 @@ void setup() {
   Serial.println(F("=======================================================\n"));
 
   // TODO 1.2: Dibuja la expresión neutra base para arrancar (eye_normal):
-  // drawEyeExpression(display, eye_normal);
+  drawEyeExpression(display, eye_normal);
 
   previousMillis = millis();
 }
